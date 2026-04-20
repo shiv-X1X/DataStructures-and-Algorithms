@@ -1,6 +1,81 @@
-
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Arrays: Static, Dynamic & Stack</title>
 <style>
-  * { box-sizing: border-box; }
+  :root {
+    --color-background-primary: #ffffff;
+    --color-background-secondary: #f5f4f0;
+    --color-background-tertiary: #eeece8;
+    --color-background-info: #e6f1fb;
+    --color-background-success: #eaf3de;
+    --color-background-warning: #faeeda;
+    --color-background-danger: #fcebeb;
+    --color-text-primary: #2c2c2a;
+    --color-text-secondary: #5f5e5a;
+    --color-text-tertiary: #888780;
+    --color-text-info: #185fa5;
+    --color-text-success: #3b6d11;
+    --color-text-warning: #854f0b;
+    --color-text-danger: #a32d2d;
+    --color-border-tertiary: rgba(44,44,42,0.15);
+    --color-border-secondary: rgba(44,44,42,0.3);
+    --color-border-primary: rgba(44,44,42,0.4);
+    --color-border-info: #378add;
+    --color-border-success: #639922;
+    --color-border-warning: #ba7517;
+    --color-border-danger: #e24b4a;
+    --font-sans: system-ui, -apple-system, sans-serif;
+    --font-mono: ui-monospace, 'Cascadia Code', monospace;
+    --border-radius-md: 8px;
+    --border-radius-lg: 12px;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --color-background-primary: #1e1e1c;
+      --color-background-secondary: #2c2c2a;
+      --color-background-tertiary: #222220;
+      --color-background-info: #042c53;
+      --color-background-success: #173404;
+      --color-background-warning: #412402;
+      --color-background-danger: #501313;
+      --color-text-primary: #e8e6de;
+      --color-text-secondary: #b4b2a9;
+      --color-text-tertiary: #888780;
+      --color-text-info: #85b7eb;
+      --color-text-success: #97c459;
+      --color-text-warning: #ef9f27;
+      --color-text-danger: #f09595;
+      --color-border-tertiary: rgba(232,230,222,0.15);
+      --color-border-secondary: rgba(232,230,222,0.3);
+      --color-border-primary: rgba(232,230,222,0.4);
+      --color-border-info: #378add;
+    }
+  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: var(--font-sans);
+    background: var(--color-background-tertiary);
+    color: var(--color-text-primary);
+    min-height: 100vh;
+    padding: 32px 16px;
+  }
+  .container {
+    max-width: 720px;
+    margin: 0 auto;
+    background: var(--color-background-primary);
+    border-radius: var(--border-radius-lg);
+    border: 0.5px solid var(--color-border-tertiary);
+    padding: 24px;
+  }
+  h1 {
+    font-size: 18px;
+    font-weight: 500;
+    margin-bottom: 20px;
+    color: var(--color-text-primary);
+  }
   .tabs { display: flex; gap: 6px; margin-bottom: 20px; flex-wrap: wrap; }
   .tab { padding: 7px 16px; border: 0.5px solid var(--color-border-secondary); border-radius: var(--border-radius-md); cursor: pointer; font-size: 13px; font-weight: 500; background: var(--color-background-primary); color: var(--color-text-secondary); transition: all .15s; }
   .tab.active { background: var(--color-background-info); color: var(--color-text-info); border-color: transparent; }
@@ -13,7 +88,6 @@
   .cell.filled { background: var(--color-background-info); border-color: var(--color-border-info); }
   .cell.empty-slot { background: var(--color-background-secondary); border: 0.5px dashed var(--color-border-secondary); }
   .cell.stack-top { background: var(--color-background-success); border-color: var(--color-border-success); }
-  .cell.deleted { background: var(--color-background-danger); border-color: var(--color-border-danger); opacity: 0.6; }
   .cell-val { font-weight: 500; font-size: 13px; color: var(--color-text-primary); }
   .cell-idx { font-size: 10px; color: var(--color-text-tertiary); }
   .mem-label { font-size: 11px; color: var(--color-text-secondary); min-width: 60px; }
@@ -26,7 +100,6 @@
   .controls { display: flex; gap: 8px; margin-bottom: 12px; flex-wrap: wrap; align-items: center; }
   .btn { padding: 6px 14px; border: 0.5px solid var(--color-border-secondary); border-radius: var(--border-radius-md); cursor: pointer; font-size: 12px; background: var(--color-background-primary); color: var(--color-text-primary); transition: background .1s; }
   .btn:hover { background: var(--color-background-secondary); }
-  .btn:disabled { opacity: 0.4; cursor: not-allowed; }
   .input-sm { padding: 5px 8px; border: 0.5px solid var(--color-border-secondary); border-radius: var(--border-radius-md); font-size: 12px; width: 60px; background: var(--color-background-primary); color: var(--color-text-primary); }
   .badge { display: inline-block; padding: 2px 8px; border-radius: 99px; font-size: 11px; font-weight: 500; }
   .badge-info { background: var(--color-background-info); color: var(--color-text-info); }
@@ -39,14 +112,15 @@
   .prop-val { font-weight: 500; color: var(--color-text-primary); }
   .op-log { font-size: 12px; color: var(--color-text-secondary); font-family: var(--font-mono); height: 22px; margin-bottom: 8px; }
   .divider { height: 0.5px; background: var(--color-border-tertiary); margin: 16px 0; }
-  .arrow-down { text-align: center; font-size: 18px; color: var(--color-text-tertiary); margin: 4px 0; }
   .stack-container { display: flex; flex-direction: column-reverse; gap: 4px; width: 160px; }
   .stack-wrapper { display: flex; gap: 24px; align-items: flex-end; flex-wrap: wrap; }
-  .stack-labels { display: flex; flex-direction: column-reverse; gap: 4px; justify-content: flex-end; font-size: 11px; color: var(--color-text-tertiary); }
   .pointer-row { font-size: 11px; color: var(--color-text-secondary); font-family: var(--font-mono); margin-top: 4px; }
 </style>
+</head>
+<body>
+<div class="container">
+  <h1>Arrays — Static, Dynamic &amp; Stack</h1>
 
-<div style="padding: 16px 0 0">
   <div class="tabs">
     <div class="tab active" onclick="switchTab('static')">Static Array</div>
     <div class="tab" onclick="switchTab('dynamic')">Dynamic Array</div>
@@ -56,7 +130,7 @@
   <!-- STATIC ARRAY -->
   <div id="panel-static" class="panel active">
     <p class="section-title">Static Array — fixed size, contiguous memory</p>
-    <p class="section-desc">Size is declared at creation and <strong>cannot change</strong>. Elements stored in consecutive memory addresses — O(1) random access by index.</p>
+    <p class="section-desc">Size is declared at creation and cannot change. Elements stored in consecutive memory addresses — O(1) random access by index.</p>
     <div class="props">
       <div class="prop"><div class="prop-label">Access by index</div><div class="prop-val"><span class="badge badge-success">O(1)</span></div></div>
       <div class="prop"><div class="prop-label">Search (unsorted)</div><div class="prop-val"><span class="badge badge-warn">O(n)</span></div></div>
@@ -109,23 +183,23 @@ System.arraycopy(arr, 2, newArr, 3, arr.length - 2);</div>
     <div id="static-cpp" class="code-block" style="display:none"><span class="kw">int</span> arr[6] = {10, 20, 30, 40, 50, 60};  <span class="cm">// stack-allocated</span>
 
 <span class="cm">// Access — O(1)</span>
-std::cout << arr[3];   <span class="cm">// 40</span>
+std::cout &lt;&lt; arr[3];   <span class="cm">// 40</span>
 
 <span class="cm">// Traversal</span>
-<span class="kw">for</span> (<span class="kw">int</span> i = 0; i < 6; i++) std::cout << arr[i] << " ";
+<span class="kw">for</span> (<span class="kw">int</span> i = 0; i &lt; 6; i++) std::cout &lt;&lt; arr[i] &lt;&lt; " ";
 
 <span class="cm">// Pointer arithmetic (same as arr[3])</span>
-std::cout << *(arr + 3);
+std::cout &lt;&lt; *(arr + 3);
 
 <span class="cm">// std::array (safer, size fixed at compile time)</span>
-std::array<<span class="kw">int</span>, 6> a = {10,20,30,40,50,60};
-std::cout << a.size();   <span class="cm">// 6</span></div>
+std::array&lt;<span class="kw">int</span>, 6&gt; a = {10,20,30,40,50,60};
+std::cout &lt;&lt; a.size();   <span class="cm">// 6</span></div>
   </div>
 
   <!-- DYNAMIC ARRAY -->
   <div id="panel-dynamic" class="panel">
     <p class="section-title">Dynamic Array — resizable, amortized O(1) append</p>
-    <p class="section-desc">Internally a static array with <strong>extra capacity</strong>. When full, a new array (~2× size) is allocated and elements are copied. Amortized O(1) append.</p>
+    <p class="section-desc">Internally a static array with extra capacity. When full, a new array (~2× size) is allocated and elements are copied. Amortized O(1) append.</p>
     <div class="props">
       <div class="prop"><div class="prop-label">Append (amortized)</div><div class="prop-val"><span class="badge badge-success">O(1)</span></div></div>
       <div class="prop"><div class="prop-label">Access by index</div><div class="prop-val"><span class="badge badge-success">O(1)</span></div></div>
@@ -171,7 +245,7 @@ print(sys.getsizeof(arr))  <span class="cm"># bytes incl. over-alloc</span>
 
 <span class="cm"># List comprehension</span>
 squares = [x**2 <span class="kw">for</span> x <span class="kw">in</span> range(10)]</div>
-    <div id="dynamic-java" class="code-block" style="display:none">ArrayList<<span class="kw">Integer</span>> arr = <span class="kw">new</span> ArrayList<>();
+    <div id="dynamic-java" class="code-block" style="display:none">ArrayList&lt;<span class="kw">Integer</span>&gt; arr = <span class="kw">new</span> ArrayList&lt;&gt;();
 
 <span class="cm">// Append — amortized O(1)</span>
 arr.add(10);
@@ -191,8 +265,8 @@ System.out.println(arr.get(0));
 System.out.println(arr.size());
 
 <span class="cm">// Pre-size for performance</span>
-ArrayList<<span class="kw">Integer</span>> big = <span class="kw">new</span> ArrayList<>(1000);</div>
-    <div id="dynamic-cpp" class="code-block" style="display:none">std::vector<<span class="kw">int</span>> arr = {10, 20, 30, 40};
+ArrayList&lt;<span class="kw">Integer</span>&gt; big = <span class="kw">new</span> ArrayList&lt;&gt;(1000);</div>
+    <div id="dynamic-cpp" class="code-block" style="display:none">std::vector&lt;<span class="kw">int</span>&gt; arr = {10, 20, 30, 40};
 
 <span class="cm">// Append — amortized O(1)</span>
 arr.push_back(50);
@@ -207,8 +281,8 @@ arr.pop_back();
 arr.erase(arr.begin() + 1);
 
 <span class="cm">// Size vs capacity</span>
-std::cout << arr.size();      <span class="cm">// elements</span>
-std::cout << arr.capacity();  <span class="cm">// allocated slots</span>
+std::cout &lt;&lt; arr.size();      <span class="cm">// elements</span>
+std::cout &lt;&lt; arr.capacity();  <span class="cm">// allocated slots</span>
 
 <span class="cm">// Reserve capacity upfront</span>
 arr.reserve(100);             <span class="cm">// avoids resizes</span></div>
@@ -217,7 +291,7 @@ arr.reserve(100);             <span class="cm">// avoids resizes</span></div>
   <!-- STACK -->
   <div id="panel-stack" class="panel">
     <p class="section-title">Stack — LIFO, array-based implementation</p>
-    <p class="section-desc">Last In, First Out. Only the <strong>top</strong> is accessible. Built on a dynamic array — push/pop are O(1). Used in function call frames, undo/redo, expression parsing, DFS.</p>
+    <p class="section-desc">Last In, First Out. Only the top is accessible. Built on a dynamic array — push/pop are O(1). Used in function call frames, undo/redo, expression parsing, DFS.</p>
     <div class="props">
       <div class="prop"><div class="prop-label">Push (add to top)</div><div class="prop-val"><span class="badge badge-success">O(1)</span></div></div>
       <div class="prop"><div class="prop-label">Pop (remove top)</div><div class="prop-val"><span class="badge badge-success">O(1)</span></div></div>
@@ -272,7 +346,7 @@ stack = deque()
 stack.append(10)
 stack.pop()</div>
     <div id="stack-java" class="code-block" style="display:none"><span class="cm">// Option 1: Deque (preferred over Stack class)</span>
-Deque<<span class="kw">Integer</span>> stack = <span class="kw">new</span> ArrayDeque<>();
+Deque&lt;<span class="kw">Integer</span>&gt; stack = <span class="kw">new</span> ArrayDeque&lt;&gt;();
 
 stack.push(10);        <span class="cm">// Push — O(1)</span>
 stack.push(20);
@@ -284,12 +358,12 @@ stack.push(30);
 System.out.println(stack.isEmpty());  <span class="cm">// false</span>
 
 <span class="cm">// Option 2: Legacy Stack class (avoid in new code)</span>
-Stack<<span class="kw">Integer</span>> s = <span class="kw">new</span> Stack<>();
+Stack&lt;<span class="kw">Integer</span>&gt; s = <span class="kw">new</span> Stack&lt;&gt;();
 s.push(10);
 s.peek();
 s.pop();</div>
     <div id="stack-cpp" class="code-block" style="display:none"><span class="cm">// std::stack (adapter over deque by default)</span>
-std::stack<<span class="kw">int</span>> stack;
+std::stack&lt;<span class="kw">int</span>&gt; stack;
 
 stack.push(10);         <span class="cm">// Push — O(1)</span>
 stack.push(20);
@@ -298,125 +372,127 @@ stack.push(30);
 <span class="kw">int</span> top = stack.top();   <span class="cm">// 30, no removal — O(1)</span>
 stack.pop();             <span class="cm">// removes top — O(1) (returns void!)</span>
 
-<span class="kw">if</span> (stack.empty()) std::cout << "empty";
-std::cout << stack.size();
+<span class="kw">if</span> (stack.empty()) std::cout &lt;&lt; "empty";
+std::cout &lt;&lt; stack.size();
 
 <span class="cm">// Use vector as underlying container</span>
-std::stack<<span class="kw">int</span>, std::vector<<span class="kw">int</span>>> vs;
+std::stack&lt;<span class="kw">int</span>, std::vector&lt;<span class="kw">int</span>&gt;&gt; vs;
 vs.push(10);</div>
   </div>
+
 </div>
 
 <script>
-const LANGS = {static: 'py', dynamic: 'py', stack: 'py'};
+  const LANGS = {static: 'py', dynamic: 'py', stack: 'py'};
 
-function switchTab(tab) {
-  document.querySelectorAll('.tab').forEach((t,i) => t.classList.toggle('active', ['static','dynamic','stack'][i]===tab));
-  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
-  document.getElementById('panel-'+tab).classList.add('active');
-}
+  function switchTab(tab) {
+    document.querySelectorAll('.tab').forEach((t,i) => t.classList.toggle('active', ['static','dynamic','stack'][i]===tab));
+    document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+    document.getElementById('panel-'+tab).classList.add('active');
+  }
 
-function switchLang(panel, lang) {
-  LANGS[panel] = lang;
-  const prefixes = {static:['py','java','cpp'], dynamic:['py','java','cpp'], stack:['py','java','cpp']};
-  prefixes[panel].forEach(l => {
-    const el = document.getElementById(panel+'-'+l);
-    if(el) el.style.display = l===lang ? 'block':'none';
-  });
-  document.querySelectorAll('#panel-'+panel+' .lang-tab').forEach((t,i) => {
-    t.classList.toggle('active', ['py','java','cpp'][i]===lang);
-  });
-}
+  function switchLang(panel, lang) {
+    LANGS[panel] = lang;
+    ['py','java','cpp'].forEach(l => {
+      const el = document.getElementById(panel+'-'+l);
+      if(el) el.style.display = l===lang ? 'block':'none';
+    });
+    document.querySelectorAll('#panel-'+panel+' .lang-tab').forEach((t,i) => {
+      t.classList.toggle('active', ['py','java','cpp'][i]===lang);
+    });
+  }
 
-// Dynamic array demo
-let dynArr = [10, 20, 30, 40];
-let dynCap = 8;
-let lastResize = false;
+  // Dynamic array demo
+  let dynArr = [10, 20, 30, 40];
+  let dynCap = 8;
+  let lastResize = false;
 
-function renderDyn() {
-  const c = document.getElementById('dyn-cells');
-  c.innerHTML = '';
-  for(let i=0;i<dynCap;i++){
-    const cell = document.createElement('div');
-    cell.className = 'cell ' + (i < dynArr.length ? 'filled' : 'empty-slot');
-    if(i < dynArr.length){
-      cell.innerHTML = `<span class="cell-val">${dynArr[i]}</span><span class="cell-idx">[${i}]</span>`;
-    } else {
-      cell.innerHTML = `<span class="cell-val" style="color:var(--color-text-tertiary)">—</span>`;
+  function renderDyn() {
+    const c = document.getElementById('dyn-cells');
+    c.innerHTML = '';
+    for(let i=0;i<dynCap;i++){
+      const cell = document.createElement('div');
+      cell.className = 'cell ' + (i < dynArr.length ? 'filled' : 'empty-slot');
+      if(i < dynArr.length){
+        cell.innerHTML = `<span class="cell-val">${dynArr[i]}</span><span class="cell-idx">[${i}]</span>`;
+      } else {
+        cell.innerHTML = `<span class="cell-val" style="color:var(--color-text-tertiary)">—</span>`;
+      }
+      c.appendChild(cell);
     }
-    c.appendChild(cell);
+    document.getElementById('dyn-size').textContent = dynArr.length;
+    document.getElementById('dyn-cap').textContent = dynCap;
+    const rb = document.getElementById('resize-badge');
+    rb.style.display = lastResize ? 'inline-block':'none';
+    lastResize = false;
   }
-  document.getElementById('dyn-size').textContent = dynArr.length;
-  document.getElementById('dyn-cap').textContent = dynCap;
-  const rb = document.getElementById('resize-badge');
-  rb.style.display = lastResize ? 'inline-block':'none';
-  lastResize = false;
-}
 
-function dynPush() {
-  const val = parseInt(document.getElementById('dyn-input').value) || 0;
-  if(dynArr.length >= dynCap){ dynCap *= 2; lastResize = true; }
-  dynArr.push(val);
-  document.getElementById('dyn-log').textContent = `push(${val}) → size now ${dynArr.length}${lastResize?' [RESIZE: capacity doubled]':''}`;
-  renderDyn();
-}
-
-function dynPop() {
-  if(dynArr.length===0){ document.getElementById('dyn-log').textContent='Stack underflow — array is empty'; return; }
-  const v = dynArr.pop();
-  document.getElementById('dyn-log').textContent = `pop() → removed ${v}, size now ${dynArr.length}`;
-  renderDyn();
-}
-
-function dynReset() {
-  dynArr=[10,20,30,40]; dynCap=8; lastResize=false;
-  document.getElementById('dyn-log').textContent='— reset —';
-  renderDyn();
-}
-
-// Stack demo
-let stkArr = [5, 12, 8];
-const MAX_STK = 6;
-
-function renderStk() {
-  const c = document.getElementById('stk-cells');
-  c.innerHTML = '';
-  for(let i=0;i<stkArr.length;i++){
-    const cell = document.createElement('div');
-    cell.className = 'cell ' + (i===stkArr.length-1 ? 'stack-top':'filled');
-    cell.style.width = '80px';
-    cell.innerHTML = `<span class="cell-val">${stkArr[i]}</span><span class="cell-idx">${i===stkArr.length-1 ? '← top' : 'index '+i}</span>`;
-    c.prepend(cell);
+  function dynPush() {
+    const val = parseInt(document.getElementById('dyn-input').value) || 0;
+    if(dynArr.length >= dynCap){ dynCap *= 2; lastResize = true; }
+    dynArr.push(val);
+    document.getElementById('dyn-log').textContent = `push(${val}) → size now ${dynArr.length}${lastResize?' [RESIZE: capacity doubled]':''}`;
+    renderDyn();
   }
-  document.getElementById('stk-pointer').textContent = stkArr.length ? `top → arr[${stkArr.length-1}] = ${stkArr[stkArr.length-1]}` : '(empty)';
-}
 
-function stkPush() {
-  if(stkArr.length>=MAX_STK){ document.getElementById('stk-log').textContent='Stack overflow (max 6 for demo)'; return; }
-  const val = parseInt(document.getElementById('stk-input').value) || 0;
-  stkArr.push(val);
-  document.getElementById('stk-log').textContent = `push(${val}) → top is now ${val}`;
+  function dynPop() {
+    if(dynArr.length===0){ document.getElementById('dyn-log').textContent='Array is empty — nothing to pop'; return; }
+    const v = dynArr.pop();
+    document.getElementById('dyn-log').textContent = `pop() → removed ${v}, size now ${dynArr.length}`;
+    renderDyn();
+  }
+
+  function dynReset() {
+    dynArr=[10,20,30,40]; dynCap=8; lastResize=false;
+    document.getElementById('dyn-log').textContent='— reset —';
+    renderDyn();
+  }
+
+  // Stack demo
+  let stkArr = [5, 12, 8];
+  const MAX_STK = 6;
+
+  function renderStk() {
+    const c = document.getElementById('stk-cells');
+    c.innerHTML = '';
+    for(let i=0;i<stkArr.length;i++){
+      const cell = document.createElement('div');
+      cell.className = 'cell ' + (i===stkArr.length-1 ? 'stack-top':'filled');
+      cell.style.width = '80px';
+      cell.innerHTML = `<span class="cell-val">${stkArr[i]}</span><span class="cell-idx">${i===stkArr.length-1 ? '← top' : 'index '+i}</span>`;
+      c.prepend(cell);
+    }
+    document.getElementById('stk-pointer').textContent = stkArr.length ? `top → arr[${stkArr.length-1}] = ${stkArr[stkArr.length-1]}` : '(empty)';
+  }
+
+  function stkPush() {
+    if(stkArr.length>=MAX_STK){ document.getElementById('stk-log').textContent='Stack overflow (max 6 for demo)'; return; }
+    const val = parseInt(document.getElementById('stk-input').value) || 0;
+    stkArr.push(val);
+    document.getElementById('stk-log').textContent = `push(${val}) → top is now ${val}`;
+    renderStk();
+  }
+
+  function stkPop() {
+    if(!stkArr.length){ document.getElementById('stk-log').textContent='Stack underflow — nothing to pop'; return; }
+    const v = stkArr.pop();
+    document.getElementById('stk-log').textContent = `pop() → returned ${v}, new top is ${stkArr.length ? stkArr[stkArr.length-1] : 'none'}`;
+    renderStk();
+  }
+
+  function stkPeek() {
+    if(!stkArr.length){ document.getElementById('stk-log').textContent='Stack is empty — nothing to peek'; return; }
+    document.getElementById('stk-log').textContent = `peek() → top is ${stkArr[stkArr.length-1]} (not removed)`;
+  }
+
+  function stkReset() {
+    stkArr=[5,12,8];
+    document.getElementById('stk-log').textContent='— reset —';
+    renderStk();
+  }
+
+  renderDyn();
   renderStk();
-}
-
-function stkPop() {
-  if(!stkArr.length){ document.getElementById('stk-log').textContent='Stack underflow — nothing to pop'; return; }
-  const v = stkArr.pop();
-  document.getElementById('stk-log').textContent = `pop() → returned ${v}, new top is ${stkArr.length ? stkArr[stkArr.length-1] : 'none'}`;
-  renderStk();
-}
-
-function stkPeek() {
-  if(!stkArr.length){ document.getElementById('stk-log').textContent='Stack is empty — nothing to peek'; return; }
-  document.getElementById('stk-log').textContent = `peek() → top is ${stkArr[stkArr.length-1]} (not removed)`;
-}
-
-function stkReset() {
-  stkArr=[5,12,8];
-  document.getElementById('stk-log').textContent='— reset —';
-  renderStk();
-}
-
-renderDyn();
-renderStk();
 </script>
+</body>
+</html>
