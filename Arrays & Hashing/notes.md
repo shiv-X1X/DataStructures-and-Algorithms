@@ -1,4 +1,4 @@
-#🧩 Arrays & Hashing
+# 🧩 Arrays & Hashing
 
 ## 📦Prerequisites ✅
 
