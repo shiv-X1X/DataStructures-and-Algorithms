@@ -1,0 +1,498 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Arrays: Static, Dynamic & Stack</title>
+<style>
+  :root {
+    --color-background-primary: #ffffff;
+    --color-background-secondary: #f5f4f0;
+    --color-background-tertiary: #eeece8;
+    --color-background-info: #e6f1fb;
+    --color-background-success: #eaf3de;
+    --color-background-warning: #faeeda;
+    --color-background-danger: #fcebeb;
+    --color-text-primary: #2c2c2a;
+    --color-text-secondary: #5f5e5a;
+    --color-text-tertiary: #888780;
+    --color-text-info: #185fa5;
+    --color-text-success: #3b6d11;
+    --color-text-warning: #854f0b;
+    --color-text-danger: #a32d2d;
+    --color-border-tertiary: rgba(44,44,42,0.15);
+    --color-border-secondary: rgba(44,44,42,0.3);
+    --color-border-primary: rgba(44,44,42,0.4);
+    --color-border-info: #378add;
+    --color-border-success: #639922;
+    --color-border-warning: #ba7517;
+    --color-border-danger: #e24b4a;
+    --font-sans: system-ui, -apple-system, sans-serif;
+    --font-mono: ui-monospace, 'Cascadia Code', monospace;
+    --border-radius-md: 8px;
+    --border-radius-lg: 12px;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --color-background-primary: #1e1e1c;
+      --color-background-secondary: #2c2c2a;
+      --color-background-tertiary: #222220;
+      --color-background-info: #042c53;
+      --color-background-success: #173404;
+      --color-background-warning: #412402;
+      --color-background-danger: #501313;
+      --color-text-primary: #e8e6de;
+      --color-text-secondary: #b4b2a9;
+      --color-text-tertiary: #888780;
+      --color-text-info: #85b7eb;
+      --color-text-success: #97c459;
+      --color-text-warning: #ef9f27;
+      --color-text-danger: #f09595;
+      --color-border-tertiary: rgba(232,230,222,0.15);
+      --color-border-secondary: rgba(232,230,222,0.3);
+      --color-border-primary: rgba(232,230,222,0.4);
+      --color-border-info: #378add;
+    }
+  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: var(--font-sans);
+    background: var(--color-background-tertiary);
+    color: var(--color-text-primary);
+    min-height: 100vh;
+    padding: 32px 16px;
+  }
+  .container {
+    max-width: 720px;
+    margin: 0 auto;
+    background: var(--color-background-primary);
+    border-radius: var(--border-radius-lg);
+    border: 0.5px solid var(--color-border-tertiary);
+    padding: 24px;
+  }
+  h1 {
+    font-size: 18px;
+    font-weight: 500;
+    margin-bottom: 20px;
+    color: var(--color-text-primary);
+  }
+  .tabs { display: flex; gap: 6px; margin-bottom: 20px; flex-wrap: wrap; }
+  .tab { padding: 7px 16px; border: 0.5px solid var(--color-border-secondary); border-radius: var(--border-radius-md); cursor: pointer; font-size: 13px; font-weight: 500; background: var(--color-background-primary); color: var(--color-text-secondary); transition: all .15s; }
+  .tab.active { background: var(--color-background-info); color: var(--color-text-info); border-color: transparent; }
+  .panel { display: none; }
+  .panel.active { display: block; }
+  .section-title { font-size: 15px; font-weight: 500; color: var(--color-text-primary); margin: 0 0 6px; }
+  .section-desc { font-size: 13px; color: var(--color-text-secondary); margin: 0 0 16px; line-height: 1.6; }
+  .mem-row { display: flex; gap: 4px; margin-bottom: 12px; align-items: center; flex-wrap: wrap; }
+  .cell { width: 52px; height: 44px; border: 0.5px solid var(--color-border-secondary); border-radius: 6px; display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 11px; background: var(--color-background-secondary); }
+  .cell.filled { background: var(--color-background-info); border-color: var(--color-border-info); }
+  .cell.empty-slot { background: var(--color-background-secondary); border: 0.5px dashed var(--color-border-secondary); }
+  .cell.stack-top { background: var(--color-background-success); border-color: var(--color-border-success); }
+  .cell-val { font-weight: 500; font-size: 13px; color: var(--color-text-primary); }
+  .cell-idx { font-size: 10px; color: var(--color-text-tertiary); }
+  .mem-label { font-size: 11px; color: var(--color-text-secondary); min-width: 60px; }
+  .lang-tabs { display: flex; gap: 4px; margin-bottom: 8px; }
+  .lang-tab { padding: 3px 10px; border: 0.5px solid var(--color-border-secondary); border-radius: var(--border-radius-md); cursor: pointer; font-size: 11px; background: var(--color-background-secondary); color: var(--color-text-secondary); }
+  .lang-tab.active { background: var(--color-background-primary); color: var(--color-text-primary); font-weight: 500; }
+  .code-block { background: var(--color-background-secondary); border: 0.5px solid var(--color-border-tertiary); border-radius: var(--border-radius-md); padding: 12px 14px; font-family: var(--font-mono); font-size: 12px; line-height: 1.7; white-space: pre; overflow-x: auto; color: var(--color-text-primary); }
+  .kw { color: var(--color-text-info); }
+  .cm { color: var(--color-text-tertiary); }
+  .controls { display: flex; gap: 8px; margin-bottom: 12px; flex-wrap: wrap; align-items: center; }
+  .btn { padding: 6px 14px; border: 0.5px solid var(--color-border-secondary); border-radius: var(--border-radius-md); cursor: pointer; font-size: 12px; background: var(--color-background-primary); color: var(--color-text-primary); transition: background .1s; }
+  .btn:hover { background: var(--color-background-secondary); }
+  .input-sm { padding: 5px 8px; border: 0.5px solid var(--color-border-secondary); border-radius: var(--border-radius-md); font-size: 12px; width: 60px; background: var(--color-background-primary); color: var(--color-text-primary); }
+  .badge { display: inline-block; padding: 2px 8px; border-radius: 99px; font-size: 11px; font-weight: 500; }
+  .badge-info { background: var(--color-background-info); color: var(--color-text-info); }
+  .badge-success { background: var(--color-background-success); color: var(--color-text-success); }
+  .badge-warn { background: var(--color-background-warning); color: var(--color-text-warning); }
+  .badge-danger { background: var(--color-background-danger); color: var(--color-text-danger); }
+  .props { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 16px; }
+  .prop { background: var(--color-background-secondary); border-radius: var(--border-radius-md); padding: 8px 12px; font-size: 12px; }
+  .prop-label { color: var(--color-text-secondary); margin-bottom: 2px; }
+  .prop-val { font-weight: 500; color: var(--color-text-primary); }
+  .op-log { font-size: 12px; color: var(--color-text-secondary); font-family: var(--font-mono); height: 22px; margin-bottom: 8px; }
+  .divider { height: 0.5px; background: var(--color-border-tertiary); margin: 16px 0; }
+  .stack-container { display: flex; flex-direction: column-reverse; gap: 4px; width: 160px; }
+  .stack-wrapper { display: flex; gap: 24px; align-items: flex-end; flex-wrap: wrap; }
+  .pointer-row { font-size: 11px; color: var(--color-text-secondary); font-family: var(--font-mono); margin-top: 4px; }
+</style>
+</head>
+<body>
+<div class="container">
+  <h1>Arrays — Static, Dynamic &amp; Stack</h1>
+
+  <div class="tabs">
+    <div class="tab active" onclick="switchTab('static')">Static Array</div>
+    <div class="tab" onclick="switchTab('dynamic')">Dynamic Array</div>
+    <div class="tab" onclick="switchTab('stack')">Stack (Array-based)</div>
+  </div>
+
+  <!-- STATIC ARRAY -->
+  <div id="panel-static" class="panel active">
+    <p class="section-title">Static Array — fixed size, contiguous memory</p>
+    <p class="section-desc">Size is declared at creation and cannot change. Elements stored in consecutive memory addresses — O(1) random access by index.</p>
+    <div class="props">
+      <div class="prop"><div class="prop-label">Access by index</div><div class="prop-val"><span class="badge badge-success">O(1)</span></div></div>
+      <div class="prop"><div class="prop-label">Search (unsorted)</div><div class="prop-val"><span class="badge badge-warn">O(n)</span></div></div>
+      <div class="prop"><div class="prop-label">Insert / Delete</div><div class="prop-val"><span class="badge badge-danger">O(n) — shift needed</span></div></div>
+      <div class="prop"><div class="prop-label">Size</div><div class="prop-val">Fixed at compile/init time</div></div>
+    </div>
+    <div class="section-title" style="font-size:13px;margin-bottom:8px;">Memory layout — int arr[6]</div>
+    <div class="mem-row">
+      <div class="mem-label">Address →</div>
+      <div class="cell filled"><span class="cell-val">10</span><span class="cell-idx">[0]</span></div>
+      <div class="cell filled"><span class="cell-val">20</span><span class="cell-idx">[1]</span></div>
+      <div class="cell filled"><span class="cell-val">30</span><span class="cell-idx">[2]</span></div>
+      <div class="cell filled"><span class="cell-val">40</span><span class="cell-idx">[3]</span></div>
+      <div class="cell filled"><span class="cell-val">50</span><span class="cell-idx">[4]</span></div>
+      <div class="cell filled"><span class="cell-val">60</span><span class="cell-idx">[5]</span></div>
+    </div>
+    <p style="font-size:11px;color:var(--color-text-tertiary);margin-bottom:16px;">Each cell is 4 bytes (int). arr[3] → base_address + 3×4 — direct jump, no traversal.</p>
+    <div class="divider"></div>
+    <div class="lang-tabs">
+      <div class="lang-tab active" onclick="switchLang('static','py')">Python</div>
+      <div class="lang-tab" onclick="switchLang('static','java')">Java</div>
+      <div class="lang-tab" onclick="switchLang('static','cpp')">C++</div>
+    </div>
+    <div id="static-py" class="code-block"><span class="cm"># Python doesn't have true static arrays; use list with fixed size or array module</span>
+<span class="kw">from</span> array <span class="kw">import</span> array
+arr = array(<span class="cm">'i'</span>, [10, 20, 30, 40, 50, 60])  <span class="cm"># 'i' = int</span>
+
+<span class="cm"># Access — O(1)</span>
+print(arr[3])        <span class="cm"># 40</span>
+
+<span class="cm"># Traversal</span>
+<span class="kw">for</span> x <span class="kw">in</span> arr:
+    print(x)
+
+<span class="cm"># Search — O(n)</span>
+idx = arr.index(30)  <span class="cm"># returns 2</span></div>
+    <div id="static-java" class="code-block" style="display:none"><span class="kw">int</span>[] arr = {10, 20, 30, 40, 50, 60};  <span class="cm">// fixed at init</span>
+
+<span class="cm">// Access — O(1)</span>
+System.out.println(arr[3]);   <span class="cm">// 40</span>
+
+<span class="cm">// Traversal</span>
+<span class="kw">for</span> (<span class="kw">int</span> x : arr) System.out.println(x);
+
+<span class="cm">// Insert at index 2 (requires manual shifting)</span>
+<span class="kw">int</span>[] newArr = <span class="kw">new int</span>[arr.length + 1];
+System.arraycopy(arr, 0, newArr, 0, 2);
+newArr[2] = 25;
+System.arraycopy(arr, 2, newArr, 3, arr.length - 2);</div>
+    <div id="static-cpp" class="code-block" style="display:none"><span class="kw">int</span> arr[6] = {10, 20, 30, 40, 50, 60};  <span class="cm">// stack-allocated</span>
+
+<span class="cm">// Access — O(1)</span>
+std::cout &lt;&lt; arr[3];   <span class="cm">// 40</span>
+
+<span class="cm">// Traversal</span>
+<span class="kw">for</span> (<span class="kw">int</span> i = 0; i &lt; 6; i++) std::cout &lt;&lt; arr[i] &lt;&lt; " ";
+
+<span class="cm">// Pointer arithmetic (same as arr[3])</span>
+std::cout &lt;&lt; *(arr + 3);
+
+<span class="cm">// std::array (safer, size fixed at compile time)</span>
+std::array&lt;<span class="kw">int</span>, 6&gt; a = {10,20,30,40,50,60};
+std::cout &lt;&lt; a.size();   <span class="cm">// 6</span></div>
+  </div>
+
+  <!-- DYNAMIC ARRAY -->
+  <div id="panel-dynamic" class="panel">
+    <p class="section-title">Dynamic Array — resizable, amortized O(1) append</p>
+    <p class="section-desc">Internally a static array with extra capacity. When full, a new array (~2× size) is allocated and elements are copied. Amortized O(1) append.</p>
+    <div class="props">
+      <div class="prop"><div class="prop-label">Append (amortized)</div><div class="prop-val"><span class="badge badge-success">O(1)</span></div></div>
+      <div class="prop"><div class="prop-label">Access by index</div><div class="prop-val"><span class="badge badge-success">O(1)</span></div></div>
+      <div class="prop"><div class="prop-label">Insert/Delete mid</div><div class="prop-val"><span class="badge badge-warn">O(n)</span></div></div>
+      <div class="prop"><div class="prop-label">Resize (worst case)</div><div class="prop-val"><span class="badge badge-danger">O(n)</span></div></div>
+    </div>
+    <div class="controls">
+      <input id="dyn-input" class="input-sm" type="number" placeholder="val" value="99">
+      <button class="btn" onclick="dynPush()">Push</button>
+      <button class="btn" onclick="dynPop()">Pop</button>
+      <button class="btn" onclick="dynReset()">Reset</button>
+    </div>
+    <div class="op-log" id="dyn-log">— ready —</div>
+    <div style="margin-bottom:8px;font-size:12px;color:var(--color-text-secondary);">
+      size: <span id="dyn-size" style="font-weight:500;color:var(--color-text-primary)">4</span> &nbsp;|&nbsp;
+      capacity: <span id="dyn-cap" style="font-weight:500;color:var(--color-text-primary)">8</span>
+      &nbsp;<span class="badge badge-info" id="resize-badge" style="display:none">Resize happened!</span>
+    </div>
+    <div class="mem-row" id="dyn-cells"></div>
+    <p style="font-size:11px;color:var(--color-text-tertiary);margin-bottom:16px;"><span style="display:inline-block;width:10px;height:10px;background:var(--color-background-info);border-radius:2px;margin-right:4px;"></span>filled &nbsp;<span style="display:inline-block;width:10px;height:10px;background:var(--color-background-secondary);border-radius:2px;border:0.5px dashed var(--color-border-secondary);margin-right:4px;"></span>reserved capacity</p>
+    <div class="divider"></div>
+    <div class="lang-tabs">
+      <div class="lang-tab active" onclick="switchLang('dynamic','py')">Python</div>
+      <div class="lang-tab" onclick="switchLang('dynamic','java')">Java</div>
+      <div class="lang-tab" onclick="switchLang('dynamic','cpp')">C++</div>
+    </div>
+    <div id="dynamic-py" class="code-block"><span class="cm"># Python list IS a dynamic array</span>
+arr = [10, 20, 30, 40]
+
+<span class="cm"># Append — amortized O(1)</span>
+arr.append(50)
+
+<span class="cm"># Insert at index — O(n)</span>
+arr.insert(2, 25)   <span class="cm"># shifts elements right</span>
+
+<span class="cm"># Delete by index — O(n)</span>
+arr.pop(2)          <span class="cm"># shifts elements left</span>
+arr.pop()           <span class="cm"># remove last — O(1)</span>
+
+<span class="cm"># Size vs capacity (CPython)</span>
+<span class="kw">import</span> sys
+print(sys.getsizeof(arr))  <span class="cm"># bytes incl. over-alloc</span>
+
+<span class="cm"># List comprehension</span>
+squares = [x**2 <span class="kw">for</span> x <span class="kw">in</span> range(10)]</div>
+    <div id="dynamic-java" class="code-block" style="display:none">ArrayList&lt;<span class="kw">Integer</span>&gt; arr = <span class="kw">new</span> ArrayList&lt;&gt;();
+
+<span class="cm">// Append — amortized O(1)</span>
+arr.add(10);
+arr.add(20);
+
+<span class="cm">// Insert at index — O(n)</span>
+arr.add(1, 15);   <span class="cm">// shifts right from index 1</span>
+
+<span class="cm">// Remove — O(n)</span>
+arr.remove(Integer.valueOf(15));  <span class="cm">// by value</span>
+arr.remove(0);                    <span class="cm">// by index</span>
+
+<span class="cm">// Access — O(1)</span>
+System.out.println(arr.get(0));
+
+<span class="cm">// Size</span>
+System.out.println(arr.size());
+
+<span class="cm">// Pre-size for performance</span>
+ArrayList&lt;<span class="kw">Integer</span>&gt; big = <span class="kw">new</span> ArrayList&lt;&gt;(1000);</div>
+    <div id="dynamic-cpp" class="code-block" style="display:none">std::vector&lt;<span class="kw">int</span>&gt; arr = {10, 20, 30, 40};
+
+<span class="cm">// Append — amortized O(1)</span>
+arr.push_back(50);
+
+<span class="cm">// Insert at index — O(n)</span>
+arr.insert(arr.begin() + 2, 25);
+
+<span class="cm">// Remove last — O(1)</span>
+arr.pop_back();
+
+<span class="cm">// Remove at index — O(n)</span>
+arr.erase(arr.begin() + 1);
+
+<span class="cm">// Size vs capacity</span>
+std::cout &lt;&lt; arr.size();      <span class="cm">// elements</span>
+std::cout &lt;&lt; arr.capacity();  <span class="cm">// allocated slots</span>
+
+<span class="cm">// Reserve capacity upfront</span>
+arr.reserve(100);             <span class="cm">// avoids resizes</span></div>
+  </div>
+
+  <!-- STACK -->
+  <div id="panel-stack" class="panel">
+    <p class="section-title">Stack — LIFO, array-based implementation</p>
+    <p class="section-desc">Last In, First Out. Only the top is accessible. Built on a dynamic array — push/pop are O(1). Used in function call frames, undo/redo, expression parsing, DFS.</p>
+    <div class="props">
+      <div class="prop"><div class="prop-label">Push (add to top)</div><div class="prop-val"><span class="badge badge-success">O(1)</span></div></div>
+      <div class="prop"><div class="prop-label">Pop (remove top)</div><div class="prop-val"><span class="badge badge-success">O(1)</span></div></div>
+      <div class="prop"><div class="prop-label">Peek (view top)</div><div class="prop-val"><span class="badge badge-success">O(1)</span></div></div>
+      <div class="prop"><div class="prop-label">Access by index</div><div class="prop-val"><span class="badge badge-danger">Not allowed (LIFO)</span></div></div>
+    </div>
+    <div class="controls">
+      <input id="stk-input" class="input-sm" type="number" placeholder="val" value="7">
+      <button class="btn" onclick="stkPush()">Push</button>
+      <button class="btn" onclick="stkPop()">Pop</button>
+      <button class="btn" onclick="stkPeek()">Peek</button>
+      <button class="btn" onclick="stkReset()">Reset</button>
+    </div>
+    <div class="op-log" id="stk-log">— ready —</div>
+    <div class="stack-wrapper">
+      <div>
+        <div class="stack-container" id="stk-cells"></div>
+        <div class="pointer-row" id="stk-pointer"></div>
+      </div>
+      <div style="font-size:12px;color:var(--color-text-secondary);max-width:180px;line-height:1.7;">
+        <div><span class="badge badge-success" style="margin-right:4px">top</span>most recently pushed</div>
+        <div style="margin-top:8px;font-size:11px;color:var(--color-text-tertiary)">Bottom elements are inaccessible until items above are popped.</div>
+      </div>
+    </div>
+    <div class="divider"></div>
+    <div class="lang-tabs">
+      <div class="lang-tab active" onclick="switchLang('stack','py')">Python</div>
+      <div class="lang-tab" onclick="switchLang('stack','java')">Java</div>
+      <div class="lang-tab" onclick="switchLang('stack','cpp')">C++</div>
+    </div>
+    <div id="stack-py" class="code-block"><span class="cm"># Python list used as a stack</span>
+stack = []
+
+<span class="cm"># Push — O(1)</span>
+stack.append(10)
+stack.append(20)
+stack.append(30)
+
+<span class="cm"># Peek — O(1)</span>
+top = stack[-1]       <span class="cm"># 30 (no removal)</span>
+
+<span class="cm"># Pop — O(1)</span>
+val = stack.pop()     <span class="cm"># removes & returns 30</span>
+
+<span class="cm"># Check empty</span>
+<span class="kw">if not</span> stack:
+    print("Stack is empty")
+
+<span class="cm"># Using collections.deque (thread-safe)</span>
+<span class="kw">from</span> collections <span class="kw">import</span> deque
+stack = deque()
+stack.append(10)
+stack.pop()</div>
+    <div id="stack-java" class="code-block" style="display:none"><span class="cm">// Option 1: Deque (preferred over Stack class)</span>
+Deque&lt;<span class="kw">Integer</span>&gt; stack = <span class="kw">new</span> ArrayDeque&lt;&gt;();
+
+stack.push(10);        <span class="cm">// Push — O(1)</span>
+stack.push(20);
+stack.push(30);
+
+<span class="kw">int</span> top = stack.peek();  <span class="cm">// 30, no removal — O(1)</span>
+<span class="kw">int</span> val = stack.pop();   <span class="cm">// removes 30 — O(1)</span>
+
+System.out.println(stack.isEmpty());  <span class="cm">// false</span>
+
+<span class="cm">// Option 2: Legacy Stack class (avoid in new code)</span>
+Stack&lt;<span class="kw">Integer</span>&gt; s = <span class="kw">new</span> Stack&lt;&gt;();
+s.push(10);
+s.peek();
+s.pop();</div>
+    <div id="stack-cpp" class="code-block" style="display:none"><span class="cm">// std::stack (adapter over deque by default)</span>
+std::stack&lt;<span class="kw">int</span>&gt; stack;
+
+stack.push(10);         <span class="cm">// Push — O(1)</span>
+stack.push(20);
+stack.push(30);
+
+<span class="kw">int</span> top = stack.top();   <span class="cm">// 30, no removal — O(1)</span>
+stack.pop();             <span class="cm">// removes top — O(1) (returns void!)</span>
+
+<span class="kw">if</span> (stack.empty()) std::cout &lt;&lt; "empty";
+std::cout &lt;&lt; stack.size();
+
+<span class="cm">// Use vector as underlying container</span>
+std::stack&lt;<span class="kw">int</span>, std::vector&lt;<span class="kw">int</span>&gt;&gt; vs;
+vs.push(10);</div>
+  </div>
+
+</div>
+
+<script>
+  const LANGS = {static: 'py', dynamic: 'py', stack: 'py'};
+
+  function switchTab(tab) {
+    document.querySelectorAll('.tab').forEach((t,i) => t.classList.toggle('active', ['static','dynamic','stack'][i]===tab));
+    document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+    document.getElementById('panel-'+tab).classList.add('active');
+  }
+
+  function switchLang(panel, lang) {
+    LANGS[panel] = lang;
+    ['py','java','cpp'].forEach(l => {
+      const el = document.getElementById(panel+'-'+l);
+      if(el) el.style.display = l===lang ? 'block':'none';
+    });
+    document.querySelectorAll('#panel-'+panel+' .lang-tab').forEach((t,i) => {
+      t.classList.toggle('active', ['py','java','cpp'][i]===lang);
+    });
+  }
+
+  // Dynamic array demo
+  let dynArr = [10, 20, 30, 40];
+  let dynCap = 8;
+  let lastResize = false;
+
+  function renderDyn() {
+    const c = document.getElementById('dyn-cells');
+    c.innerHTML = '';
+    for(let i=0;i<dynCap;i++){
+      const cell = document.createElement('div');
+      cell.className = 'cell ' + (i < dynArr.length ? 'filled' : 'empty-slot');
+      if(i < dynArr.length){
+        cell.innerHTML = `<span class="cell-val">${dynArr[i]}</span><span class="cell-idx">[${i}]</span>`;
+      } else {
+        cell.innerHTML = `<span class="cell-val" style="color:var(--color-text-tertiary)">—</span>`;
+      }
+      c.appendChild(cell);
+    }
+    document.getElementById('dyn-size').textContent = dynArr.length;
+    document.getElementById('dyn-cap').textContent = dynCap;
+    const rb = document.getElementById('resize-badge');
+    rb.style.display = lastResize ? 'inline-block':'none';
+    lastResize = false;
+  }
+
+  function dynPush() {
+    const val = parseInt(document.getElementById('dyn-input').value) || 0;
+    if(dynArr.length >= dynCap){ dynCap *= 2; lastResize = true; }
+    dynArr.push(val);
+    document.getElementById('dyn-log').textContent = `push(${val}) → size now ${dynArr.length}${lastResize?' [RESIZE: capacity doubled]':''}`;
+    renderDyn();
+  }
+
+  function dynPop() {
+    if(dynArr.length===0){ document.getElementById('dyn-log').textContent='Array is empty — nothing to pop'; return; }
+    const v = dynArr.pop();
+    document.getElementById('dyn-log').textContent = `pop() → removed ${v}, size now ${dynArr.length}`;
+    renderDyn();
+  }
+
+  function dynReset() {
+    dynArr=[10,20,30,40]; dynCap=8; lastResize=false;
+    document.getElementById('dyn-log').textContent='— reset —';
+    renderDyn();
+  }
+
+  // Stack demo
+  let stkArr = [5, 12, 8];
+  const MAX_STK = 6;
+
+  function renderStk() {
+    const c = document.getElementById('stk-cells');
+    c.innerHTML = '';
+    for(let i=0;i<stkArr.length;i++){
+      const cell = document.createElement('div');
+      cell.className = 'cell ' + (i===stkArr.length-1 ? 'stack-top':'filled');
+      cell.style.width = '80px';
+      cell.innerHTML = `<span class="cell-val">${stkArr[i]}</span><span class="cell-idx">${i===stkArr.length-1 ? '← top' : 'index '+i}</span>`;
+      c.prepend(cell);
+    }
+    document.getElementById('stk-pointer').textContent = stkArr.length ? `top → arr[${stkArr.length-1}] = ${stkArr[stkArr.length-1]}` : '(empty)';
+  }
+
+  function stkPush() {
+    if(stkArr.length>=MAX_STK){ document.getElementById('stk-log').textContent='Stack overflow (max 6 for demo)'; return; }
+    const val = parseInt(document.getElementById('stk-input').value) || 0;
+    stkArr.push(val);
+    document.getElementById('stk-log').textContent = `push(${val}) → top is now ${val}`;
+    renderStk();
+  }
+
+  function stkPop() {
+    if(!stkArr.length){ document.getElementById('stk-log').textContent='Stack underflow — nothing to pop'; return; }
+    const v = stkArr.pop();
+    document.getElementById('stk-log').textContent = `pop() → returned ${v}, new top is ${stkArr.length ? stkArr[stkArr.length-1] : 'none'}`;
+    renderStk();
+  }
+
+  function stkPeek() {
+    if(!stkArr.length){ document.getElementById('stk-log').textContent='Stack is empty — nothing to peek'; return; }
+    document.getElementById('stk-log').textContent = `peek() → top is ${stkArr[stkArr.length-1]} (not removed)`;
+  }
+
+  function stkReset() {
+    stkArr=[5,12,8];
+    document.getElementById('stk-log').textContent='— reset —';
+    renderStk();
+  }
+
+  renderDyn();
+  renderStk();
+</script>
+</body>
+</html>
