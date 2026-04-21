@@ -49,3 +49,5 @@ The core power: O(1) average-case insert, delete, and lookup.
 </p>
 
 <sub>If the page doesn’t load, copy the URL and open it directly in your browser.</sub>
+
+![alt text](../dump/reference_table_hashing.png)
